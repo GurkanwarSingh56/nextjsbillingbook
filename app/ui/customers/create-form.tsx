@@ -184,6 +184,7 @@ export default function CreateCustomerForm() {
           >
             {uploadedImage ? (
               <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={uploadedImage}
                   alt="Uploaded preview"

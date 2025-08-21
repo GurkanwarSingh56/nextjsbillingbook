@@ -1,9 +1,6 @@
-import { lusitana } from '@/app/ui/fonts';
-import Search from '@/app/ui/search';
 import { DeleteCustomerButton } from '@/app/ui/customers/delete-button';
 import { CustomerImage } from '@/app/ui/customers/customer-image';
 import {
-  CustomersTableType,
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
 

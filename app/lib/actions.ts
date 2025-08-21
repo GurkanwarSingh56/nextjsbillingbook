@@ -77,7 +77,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
       INSERT INTO invoices (customer_id, amount, status, date)
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
-  } catch (error) {
+  } catch {
     // If a database error occurs, return a more specific error.
     return {
       message: 'Database Error: Failed to Create Invoice.',
@@ -120,7 +120,7 @@ export async function updateInvoice(
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
     `;
-  } catch (error) {
+  } catch {
     return { message: 'Database Error: Failed to Update Invoice.' };
   }
  
@@ -175,8 +175,8 @@ export async function createCustomer(
       const buffer = Buffer.from(bytes);
       
       // Create the uploads directory if it doesn't exist
-      const fs = require('fs');
-      const path = require('path');
+      const fs = await import('fs');
+      const path = await import('path');
       const uploadDir = path.join(process.cwd(), 'public', 'customers');
       
       if (!fs.existsSync(uploadDir)) {
@@ -200,7 +200,7 @@ export async function createCustomer(
       INSERT INTO customers (name, email, image_url)
       VALUES (${name}, ${email}, ${imageUrl})
     `;
-  } catch (error) {
+  } catch {
     return {
       message: 'Database Error: Failed to Create Customer.',
     };
@@ -215,7 +215,7 @@ export async function deleteCustomer(id: string) {
   try {
     await sql`DELETE FROM customers WHERE id = ${id}`;
     revalidatePath('/dashboard/customers');
-  } catch (error) {
+  } catch {
     throw new Error('Database Error: Failed to Delete Customer.');
   }
 }
