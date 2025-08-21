@@ -127,3 +127,95 @@ export async function updateInvoice(
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
+
+// Customer Schema
+const CustomerSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Please enter a customer name.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  image_url: z.string().optional(),
+});
+
+const CreateCustomer = CustomerSchema.omit({ id: true });
+
+export async function createCustomer(
+  prevState: { errors?: { name?: string[]; email?: string[]; }; message?: string; } | undefined,
+  formData: FormData,
+) {
+  // Validate form fields
+  const validatedFields = CreateCustomer.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone') || '',
+    address: formData.get('address') || '',
+    image_url: '',
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Customer.',
+    };
+  }
+
+  const { name, email } = validatedFields.data;
+  const image = formData.get('image') as File | null;
+  let imageUrl = '/customers/placeholder.svg';
+
+  // Handle file upload
+  if (image && image.size > 0) {
+    try {
+      // Create a unique filename
+      const fileName = `${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.${image.type.split('/')[1]}`;
+      
+      // Save the file to the public directory
+      const bytes = await image.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      
+      // Create the uploads directory if it doesn't exist
+      const fs = require('fs');
+      const path = require('path');
+      const uploadDir = path.join(process.cwd(), 'public', 'customers');
+      
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      const filePath = path.join(uploadDir, fileName);
+      fs.writeFileSync(filePath, buffer);
+      
+      imageUrl = `/customers/${fileName}`;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      return {
+        message: 'Failed to upload image.',
+      };
+    }
+  }
+
+  try {
+    await sql`
+      INSERT INTO customers (name, email, image_url)
+      VALUES (${name}, ${email}, ${imageUrl})
+    `;
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to Create Customer.',
+    };
+  }
+
+  // Revalidate the cache for the customers page and redirect the user.
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
+}
+
+export async function deleteCustomer(id: string) {
+  try {
+    await sql`DELETE FROM customers WHERE id = ${id}`;
+    revalidatePath('/dashboard/customers');
+  } catch (error) {
+    throw new Error('Database Error: Failed to Delete Customer.');
+  }
+}
