@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "app/**": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"]
+}

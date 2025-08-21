@@ -7,6 +7,8 @@ import Search from '@/app/ui/search';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 // Inline CreateCustomer component to avoid import issues
 function CreateCustomer() {
   return (
