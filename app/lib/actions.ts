@@ -92,9 +92,13 @@ export async function createInvoice(prevState: State, formData: FormData) {
   redirect('/dashboard/invoices');
 }
 export async function deleteInvoice(id: string) {
-    throw new Error('Failed to Delete Invoice');
+  try {
     await sql`DELETE FROM invoices WHERE id = ${id}`;
     revalidatePath('/dashboard/invoices');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to Delete Invoice.');
+  }
 }
 export async function updateInvoice(
   id: string,
